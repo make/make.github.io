@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Joulukortti</title>
+    <link href="https://fonts.googleapis.com/css?family=Risque" rel="stylesheet">
+    <style type="text/css">
+        canvas {
+            width: 1024px;
+            height: 768px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -512px;
+            margin-top: -384px;
+            border: 1px solid transparent;
+            border-radius: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<canvas width="1024" height="768" id="canvas"></canvas>
+<script>
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const width = 1024, height = 768;
+    const image = ctx.createImageData(width, height);
+    const d  = image.data;
+    const range = (l,r) => new Array(r - l).fill().map((_,k) => k + l);
+    let changed = false, imageReady = false;
+    const rand = (i) => Math.random() * i;
+    const FFFF = 256 * 256;
+
+    let td;
+
+    const draw = (x, y, r, g, b, a) => {
+        const offset = (width * Math.floor(y) + Math.floor(x)) * 4;
+        d[offset] = Math.floor(r);
+        d[offset + 1] = Math.floor(g);
+        d[offset + 2] = Math.floor(b);
+        d[offset + 3] = Math.floor(a);
+        changed = true;
+    };
+
+    // const getR = (x, y) => d[(width * Math.max(y, 0) + Math.max(x, 0)) * 4];
+    // const getG = (x, y) => d[(width * Math.max(y, 0) + Math.max(x, 0)) * 4 + 1];
+    // const getB = (x, y) => d[(width * Math.max(y, 0) + Math.max(x, 0)) * 4 + 2];
+    // const getA = (x, y) => d[(width * Math.max(y, 0) + Math.max(x, 0)) * 4 + 3];
+
+    const getColorAtOffset = (offset) => d.slice(offset, offset + 4);
+    const getColorAtXY = (x, y) => getColorAtOffset((width * y + x) * 4);
+
+    const drawText = () => {
+        ctx.font = "160px 'Risque', cursive";
+        ctx.fillText('Hyvää Joulua!', 20, 430);
+        td = ctx.getImageData(0, 0, width, height).data;
+    };
+
+    const isText = (x, y) => {
+        const offset = (width * y + x) * 4;
+        return td[offset] > 0 || td[offset + 1] > 0 || td[offset + 2] > 0 || td[offset + 3] > 0;
+    };
+
+    let r = 220;
+    let g = rand(Math.sqrt(FFFF - (r+1) * (r+1)));
+    let b = Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1)) - 1;
+    let a = 64;
+
+    let frame = 0;
+
+    const createImage = () => {
+        frame++;
+        imageReady = false;
+        ctx.fillStyle = 'white';
+        ctx.fillRect(10, 10, width, height);
+
+        // let r = rand(256);
+        // let g = rand(Math.sqrt(FFFF - (r+1) * (r+1)));
+        // let b = Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1)) - 1;
+
+        range(0, width).forEach(x =>
+            range(0, height).forEach(y => {
+                if(frame > 1) {
+                    [r,g,b,a] = getColorAtXY(x, y);
+                    let n = 1;
+
+                    if(x % 10 === 0 || y % 10 === 0) {
+                        const scale = 0.5;
+                        r += rand(256) * scale;
+                        g += rand(256) * scale;
+                        b += rand(256) * scale;
+                        a += rand(256) * scale;
+                        n += scale;
+                    }
+
+                    if(x > 0) {
+                        const [r2,g2,b2,a2] = getColorAtXY(x-1, y);
+                        r += r2;
+                        g += g2;
+                        b += b2;
+                        a += a2;
+                        n++;
+                    }
+
+                    if(y > 0) {
+                        const [r2,g2,b2,a2] = getColorAtXY(x, y-1);
+                        r += r2;
+                        g += g2;
+                        b += b2;
+                        a += a2;
+                        n++;
+                    }
+                    r /= n;
+                    g /= n;
+                    b /= n;
+                    a /= n;
+
+                    if(isText(x, y)) {
+                        r++;
+                        a+=3;
+                    } else {
+                        g++;
+                        b++;
+                    }
+
+
+                    r = Math.min(Math.max(r, 0), 255);
+                    g = Math.min(Math.max(g, 0), 255);
+                    b = Math.min(Math.max(b, 0), 255);
+                    a = Math.min(Math.max(a, 0), 255);
+
+
+                }
+                // b = Math.floor(Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1))) - 1;
+
+                draw(x, y, r, g, b, a);
+            })
+        );
+        ctx.putImageData(image, 0, 0);
+
+        imageReady = true;
+        window.requestAnimationFrame(updateFrame);
+    };
+
+    const updateFrame = (timestamp) => {
+        if(imageReady)
+            createImage();
+    };
+
+
+    document.onreadystatechange = () => {
+        if(document.readyState === "complete") {
+            drawText();
+            createImage();
+        }
+    };
+
+</script>
+</body>
+</html>
