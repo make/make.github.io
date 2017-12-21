@@ -69,6 +69,8 @@
     let a = 64;
 
     let frame = 0;
+    let border = 10;
+    let k = 128 / border;
 
     const createImage = () => {
         frame++;
@@ -132,6 +134,16 @@
                     a = Math.min(Math.max(a, 0), 255);
 
 
+                    if(x < 10)
+                        a = Math.min(a, x*10);
+                    if(y < border)
+                        a = Math.min(a, y*k);
+                    if(x > width - 10)
+                        a = Math.min(a, (width - x)*10);
+                    if(y > height - 10)
+                        a = Math.min(a, (height - y)*10);
+
+
                 }
                 // b = Math.floor(Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1))) - 1;
 
@@ -139,6 +151,8 @@
             })
         );
         ctx.putImageData(image, 0, 0);
+        border++;
+        k = 128 / border;
 
         imageReady = true;
         window.requestAnimationFrame(updateFrame);
