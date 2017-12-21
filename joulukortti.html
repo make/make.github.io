@@ -64,9 +64,12 @@
     let a = 64;
 
     let frame = 0;
-    let border = 256;
+    let border = 512;
     let k = 256 / border;
     let r2, g2, b2, a2;
+    const scale = 0.5;
+    let n;
+    let rgba;
 
     const createImage = () => {
         frame++;
@@ -74,18 +77,17 @@
         ctx.fillStyle = 'white';
         ctx.fillRect(10, 10, width, height);
 
-        // let r = rand(256);
-        // let g = rand(Math.sqrt(FFFF - (r+1) * (r+1)));
-        // let b = Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1)) - 1;
-
         range(0, width).forEach(x =>
             range(0, height).forEach(y => {
-                if(frame > 1) {
-                    [r,g,b,a] = getColorAtXY(x, y);
-                    let n = 1;
+                if(frame > 1 && rand(3) < 1) {
+                    rgba = getColorAtXY(x, y);
+                    r = rgba[0];
+                    g = rgba[1];
+                    b = rgba[2];
+                    a = rgba[3];
+                    n = 1;
 
                     if(x % 10 === 0 || y % 10 === 0) {
-                        const scale = 0.5;
                         r += rand(256) * scale;
                         g += rand(256) * scale;
                         b += rand(256) * scale;
@@ -94,20 +96,20 @@
                     }
 
                     if(x > 0) {
-                        [r2,g2,b2,a2] = getColorAtXY(x-1, y);
-                        r += r2;
-                        g += g2;
-                        b += b2;
-                        a += a2;
+                        rgba = getColorAtXY(x-1, y);
+                        r += rgba[0];
+                        g += rgba[1];
+                        b += rgba[2];
+                        a += rgba[3];
                         n++;
                     }
 
                     if(y > 0) {
-                        [r2,g2,b2,a2] = getColorAtXY(x, y-1);
-                        r += r2;
-                        g += g2;
-                        b += b2;
-                        a += a2;
+                        rgba = getColorAtXY(x, y-1);
+                        r += rgba[0];
+                        g += rgba[1];
+                        b += rgba[2];
+                        a += rgba[3];
                         n++;
                     }
                     r /= n;
@@ -131,27 +133,32 @@
                             a = Math.min(a, (height - y)*10);
                     }
 
-
                     r = Math.min(Math.max(r, 0), 255);
                     g = Math.min(Math.max(g, 0), 255);
                     b = Math.min(Math.max(b, 0), 255);
                     a = Math.min(Math.max(a, 0), 255);
 
-
-
-
+                    draw(x, y, r, g, b, a);
+                } else if(frame === 1) {
+                    if(x < 10)
+                        a = Math.min(a, x*10);
+                    if(y < border)
+                        a = Math.min(a, y*k);
+                    if(x > width - 10)
+                        a = Math.min(a, (width - x)*10);
+                    if(y > height - 10)
+                        a = Math.min(a, (height - y)*10);
+                    draw(x, y, r, g, b, a);
                 }
-                // b = Math.floor(Math.sqrt(FFFF - (r+1) * (r+1) - (g+1) * (g+1))) - 1;
-
-                draw(x, y, r, g, b, a);
             })
         );
         ctx.putImageData(image, 0, 0);
-        border++;
+        border*=1.02;
         k = 256 / border;
 
         imageReady = true;
-        window.requestAnimationFrame(updateFrame);
+        if(k > 0.02)
+            window.requestAnimationFrame(updateFrame);
     };
 
     const updateFrame = (timestamp) => {
