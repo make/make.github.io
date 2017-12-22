@@ -87,7 +87,7 @@
                     a = rgba[3];
                     n = 1;
 
-                    if(x % 10 === 0 || y % 10 === 0) {
+                    if(k > 0.05 && (x % 10 === 0 || y % 10 === 0)) {
                         r += rand(256) * scale;
                         g += rand(256) * scale;
                         b += rand(256) * scale;
