@@ -84,6 +84,9 @@
     let n;
     let rgba;
 
+    const xarr = range(0, width);
+    const yarr = range(0, height);
+
     const createImage = () => {
         drawText();
         frame++;
@@ -91,10 +94,8 @@
         ctx.fillStyle = 'white';
         ctx.fillRect(10, 10, width, height);
 
-        console.log(k);
-
-        range(0, width).forEach(x =>
-            range(0, height).forEach(y => {
+        xarr.forEach(x =>
+            yarr.forEach(y => {
                 if(frame > 1 && rand(3) < 1) {
                     rgba = getColorAtXY(x, y);
                     r = rgba[0];
