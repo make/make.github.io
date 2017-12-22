@@ -169,8 +169,10 @@
 
     document.onreadystatechange = () => {
         if(document.readyState === "complete") {
-            drawText();
-            createImage();
+            setTimeout(() => {
+                drawText();
+                createImage();
+            }, 300);
         }
     };
 
